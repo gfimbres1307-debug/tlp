@@ -16,7 +16,7 @@ public static class Rolls
     private static readonly Regex RollRx = new(@"^Random!\s*(?:\((\d+)\s*-\s*(\d+)\)\s*)?(.+?)\s+rolls?\s+an?\s+(\d+)", RegexOptions.Compiled);
 
     /// <summary>Player chat channels. A "Random!" line in one of these was typed by a person, not rolled.</summary>
-    private static bool IsPlayerChat(XivChatType t)
+    internal static bool IsPlayerChat(XivChatType t)
     {
         var c = (int)t & 0x7F;
         return c is 10 or 11 or 12 or 13 or 14 or 15 or (>= 16 and <= 23) or 24 or 27 or 28 or 29 or 30 or 32 or 37 or (>= 101 and <= 107);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 
@@ -24,7 +25,6 @@ public class GiveawayGame : IGame
     public string Name => "Giveaway";
 
     // prize
-    private bool capturing;
     private uint prizeItemId;
     private bool prizeHq;
     private string prizeItemName = string.Empty;
@@ -55,21 +55,37 @@ public class GiveawayGame : IGame
     {
         this.plugin = plugin;
         countdown = new Countdown(plugin);
-        Plugin.GameGui.HoveredItemChanged += OnHoveredItemChanged;
+        Plugin.ContextMenu.OnMenuOpened += OnMenuOpened;
     }
 
-    public void Dispose() => Plugin.GameGui.HoveredItemChanged -= OnHoveredItemChanged;
+    public void Dispose() => Plugin.ContextMenu.OnMenuOpened -= OnMenuOpened;
 
-    // ---------------- prize picking ----------------
-    private void OnHoveredItemChanged(object? sender, ulong id)
+    // ---------------- prize picking (right-click an item -> "Set as TLP Giveaway prize") ----------------
+    private void OnMenuOpened(IMenuOpenedArgs args)
     {
-        if (!capturing || id == 0) return;
-        var hq = false;
-        if (id >= 1_000_000) { id -= 1_000_000; hq = true; }
-        else if (id >= 500_000) id -= 500_000;   // collectable
-        var name = LookupItem((uint)id);
+        if (args.MenuType != ContextMenuType.Inventory) return;
+        if (args.Target is not MenuTargetInventory inv || inv.TargetItem is not { } item || item.IsEmpty) return;
+        if (phase is Phase.Countdown or Phase.Rolling) return;   // don't swap the prize mid-giveaway
+
+        var id = item.BaseItemId;
+        var hq = item.IsHq;
+        var qty = Math.Max(1, item.Quantity);
+        args.AddMenuItem(new MenuItem
+        {
+            Name = "Set as TLP Giveaway prize",
+            PrefixChar = 'T',
+            PrefixColor = 561,
+            OnClicked = _ => SetPrize(id, hq, qty),
+        });
+    }
+
+    private void SetPrize(uint id, bool hq, int qty)
+    {
+        var name = LookupItem(id);
         if (string.IsNullOrEmpty(name)) return;
-        prizeItemId = (uint)id; prizeHq = hq; prizeItemName = name; useCustom = false; capturing = false;
+        prizeItemId = id; prizeHq = hq; prizeItemName = name; prizeQty = qty;
+        useCustom = false; customPrize = string.Empty;
+        plugin.ShowGame(Name);
     }
 
     private static string LookupItem(uint id)
@@ -187,7 +203,7 @@ public class GiveawayGame : IGame
         var target = string.IsNullOrEmpty(w.World) ? w.Name : $"{w.Name}@{w.World}";
         var msg = Config.TellTemplate.Replace("{prize}", runningPrize).Replace("{name}", w.Name);
         lastSent = Chat.Clean(msg);
-        Chat.Send($"/tell {target} {msg}");
+        plugin.SendLine($"/tell {target} {msg}");
     }
 
     private void Say(string text)
@@ -230,13 +246,12 @@ public class GiveawayGame : IGame
         }
 
         ImGui.TextColored(Pink, "1. Prize");
-        if (capturing)
+        ImGui.TextColored(Grey, "Right-click the item in your inventory and choose \"Set as TLP Giveaway prize\".");
+        if (!useCustom && prizeItemId != 0)
         {
-            ImGui.TextColored(Gold, "Hover over the prize in your inventory now...");
-            if (ImGui.Button("Cancel")) capturing = false;
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Clear prize")) { prizeItemId = 0; prizeItemName = string.Empty; prizeQty = 1; }
         }
-        else if (ImGui.Button("Pick prize from inventory")) capturing = true;
-        if (ImGui.IsItemHovered() && !capturing) ImGui.SetTooltip("Click, then hover your mouse over the item in your inventory.");
 
         if (!useCustom && prizeItemId != 0)
         {

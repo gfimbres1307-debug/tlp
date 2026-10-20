@@ -299,7 +299,7 @@ public class SystemCrashGame : IGame
         var target = string.IsNullOrEmpty(winner.World) ? winner.Name : $"{winner.Name}@{winner.World}";
         var msg = $"Congrats, you won {PrizeOrDefault} in System Crash! Come find me to claim it.";
         lastSent = Chat.Clean(msg);
-        Chat.Send($"/tell {target} {msg}");
+        plugin.SendLine($"/tell {target} {msg}");
     }
 
     private void Say(string text)

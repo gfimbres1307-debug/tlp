@@ -19,6 +19,7 @@ public class Configuration : IPluginConfiguration
     public string SelectedGame { get; set; } = "Trivia";
 
     /// <summary>"3... 2... 1... GO!" before any game starts counting rolls/answers.</summary>
+    public float SecondsBetweenMessages { get; set; } = 3.0f;
     public bool CountdownEnabled { get; set; } = true;
     public int CountdownSeconds { get; set; } = 3;
     public string CountdownGoRoll { get; set; } = "GO! /random now!";
