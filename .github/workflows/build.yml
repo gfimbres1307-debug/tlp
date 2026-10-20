@@ -1,0 +1,35 @@
+name: Build TLP
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - name: Download Dalamud (for references)
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $proj = Get-ChildItem -Recurse -Filter TLP.csproj | Select-Object -First 1
+          dotnet build $proj.FullName -c Release
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: TLP
+          path: "**/bin/x64/Release/TLP/"
