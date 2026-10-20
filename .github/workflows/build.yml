@@ -22,6 +22,14 @@ jobs:
           Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
           Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
+      - name: Use the newest Dalamud SDK
+        shell: pwsh
+        run: |
+          $proj = (Get-ChildItem -Recurse -Filter TLP.csproj | Select-Object -First 1).FullName
+          $v = (Invoke-RestMethod https://api.nuget.org/v3-flatcontainer/dalamud.net.sdk/index.json).versions | Where-Object { $_ -notmatch '-' } | Select-Object -Last 1
+          Write-Host "Using Dalamud.NET.Sdk $v"
+          (Get-Content $proj) -replace 'Dalamud\.NET\.Sdk/[0-9.]+', "Dalamud.NET.Sdk/$v" | Set-Content $proj
+
       - name: Build
         shell: pwsh
         run: |
