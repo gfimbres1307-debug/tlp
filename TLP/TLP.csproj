@@ -1,0 +1,13 @@
+<Project Sdk="Dalamud.NET.Sdk/13.0.0">
+  <!--
+    If the build says this SDK version is too old for your Dalamud, change the number above
+    to the newest "Dalamud.NET.Sdk" version listed on nuget.org.
+  -->
+  <PropertyGroup>
+    <Version>1.0.0.0</Version>
+    <Description>The Last Protocol venue games (Trivia and more).</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>
