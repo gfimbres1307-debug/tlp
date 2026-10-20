@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.Chat;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -75,11 +76,14 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(CommandName);
     }
 
-    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    private void OnChatMessage(IHandleableChatMessage msg)
     {
+        var type = msg.LogKind;
+        var sender = msg.Sender;
+        var message = msg.Message;
         foreach (var g in Games)
         {
-            try { g.OnChatMessage(type, timestamp, ref sender, ref message, ref isHandled); }
+            try { g.OnChatMessage(type, sender, message); }
             catch (System.Exception ex) { Log.Error(ex, $"{g.Name} failed to read a chat message"); }
         }
     }

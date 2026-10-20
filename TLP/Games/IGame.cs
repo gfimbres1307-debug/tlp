@@ -16,5 +16,5 @@ public interface IGame : IDisposable
     void Update();
 
     /// <summary>Every chat line is passed to every game; each game ignores what it doesn't need.</summary>
-    void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled);
+    void OnChatMessage(XivChatType type, SeString sender, SeString message);
 }

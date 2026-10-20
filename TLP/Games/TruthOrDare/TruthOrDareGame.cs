@@ -55,7 +55,7 @@ public class TruthOrDareGame : IGame
     public void Dispose() { }
 
     // ---------------- chat / timing ----------------
-    public void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    public void OnChatMessage(XivChatType type, SeString sender, SeString message)
     {
         if (phase != Phase.Rolling) return;
         if (!Rolls.TryParse(type, sender, message, out var r)) return;

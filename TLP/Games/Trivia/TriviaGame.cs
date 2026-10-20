@@ -51,7 +51,7 @@ public class TriviaGame : IGame
     public void Dispose() { }
 
     // ---------------- chat listening ----------------
-    public void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    public void OnChatMessage(XivChatType type, SeString sender, SeString message)
     {
         if (!Open || Current == null) return;
         if (!Listening(type)) return;
