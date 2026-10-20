@@ -100,11 +100,31 @@ public class TriviaUi
         if (ImGui.Button("Re-shout question")) Game.ReshoutQuestion();
 
         ImGui.Separator();
+        var chosen = Game.Answers.Count(a => a.Selected);
+        ImGui.BeginDisabled(chosen == 0);
+        if (ImGui.Button($"Award {chosen} winner(s) + shout")) Game.AwardSelected();
+        ImGui.EndDisabled();
+        ImGui.SameLine();
+        if (ImGui.Button("Nobody got it + shout answer")) Game.NobodyGotIt();
+        ImGui.SameLine();
+        if (ImGui.Button("Skip (no shout)")) Game.SkipQuietly();
+
+        if (ImGui.Button("Tick all green")) foreach (var a in Game.Answers) a.Selected = a.LooksRight;
+        ImGui.SameLine();
+        if (ImGui.Button("Untick all")) foreach (var a in Game.Answers) a.Selected = false;
+        if (chosen > 0)
+        {
+            var names = Game.Answers.Where(a => a.Selected).Select(a => a.Name).ToList();
+            ImGui.TextColored(Grey, "Will shout: " + Chat.Clean(Game.Fill(Config.CorrectTemplate, names: string.Join(", ", names))));
+        }
+        DrawLastSent();
+
+        ImGui.Separator();
         ImGui.Text($"Answers ({Game.Answers.Count})");
         ImGui.SameLine();
         ImGui.TextColored(Grey, "- tick everyone who got it right. Green = looks like a match.");
 
-        if (ImGui.BeginTable("##answers", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, new Vector2(0, 260)))
+        if (ImGui.BeginTable("##answers", 5, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, new Vector2(0, Math.Max(120f, ImGui.GetContentRegionAvail().Y - 8f))))
         {
             ImGui.TableSetupColumn("Right?", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("Player", ImGuiTableColumnFlags.WidthFixed, 170);
@@ -128,27 +148,6 @@ public class TriviaUi
             }
             ImGui.EndTable();
         }
-
-        if (ImGui.Button("Tick all green")) foreach (var a in Game.Answers) a.Selected = a.LooksRight;
-        ImGui.SameLine();
-        if (ImGui.Button("Untick all")) foreach (var a in Game.Answers) a.Selected = false;
-
-        ImGui.Spacing();
-        var chosen = Game.Answers.Count(a => a.Selected);
-        ImGui.BeginDisabled(chosen == 0);
-        if (ImGui.Button($"Award {chosen} winner(s) + shout")) Game.AwardSelected();
-        ImGui.EndDisabled();
-        ImGui.SameLine();
-        if (ImGui.Button("Nobody got it + shout answer")) Game.NobodyGotIt();
-        ImGui.SameLine();
-        if (ImGui.Button("Skip (no shout)")) Game.SkipQuietly();
-
-        if (chosen > 0)
-        {
-            var names = Game.Answers.Where(a => a.Selected).Select(a => a.Name).ToList();
-            ImGui.TextColored(Grey, "Will shout: " + Chat.Clean(Game.Fill(Config.CorrectTemplate, names: string.Join(", ", names))));
-        }
-        DrawLastSent();
     }
 
     private void DrawLastSent()

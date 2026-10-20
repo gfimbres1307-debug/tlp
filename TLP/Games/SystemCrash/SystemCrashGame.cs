@@ -115,8 +115,8 @@ public class SystemCrashGame : IGame
         alive.Clear(); crashed.Clear(); entrants.Clear(); pendingCrashText.Clear();
         round = 1; finalRound = false; tie = Tie.None; tieSet.Clear(); winner = null;
         ignoredCrashed = ignoredOther = 0;
-        OpenPeriod(Config.RoundSeconds);
         Say(Config.StartTemplate.Replace("{prize}", PrizeOrDefault).Replace("{secs}", Config.RoundSeconds.ToString()));
+        OpenPeriod(Config.RoundSeconds);
     }
 
     private string PrizeOrDefault => prize.Length > 0 ? prize : "bragging rights";
@@ -142,8 +142,8 @@ public class SystemCrashGame : IGame
         if (rolled.Count == 0)
         {
             // nobody rolled: run the round again instead of crashing everyone
-            OpenPeriod(Config.RoundSeconds);
             Say($"Nobody rolled! Round {round} again -- /random now, {Config.RoundSeconds} seconds!");
+            OpenPeriod(Config.RoundSeconds);
             return;
         }
 
@@ -220,8 +220,8 @@ public class SystemCrashGame : IGame
         tieSet = new HashSet<string>(group.Select(p => p.Key));
         var lead = pendingCrashText.Count > 0 ? string.Join(" ", pendingCrashText) + " " : string.Empty;
         pendingCrashText.Clear();
-        OpenPeriod(Config.TieBreakSeconds);
         Say(lead + Config.TieTemplate.Replace("{names}", JoinNames(group.Select(p => p.Name).ToList())).Replace("{secs}", Config.TieBreakSeconds.ToString()));
+        OpenPeriod(Config.TieBreakSeconds);
     }
 
     private void NextRoundOrWin()
@@ -233,7 +233,6 @@ public class SystemCrashGame : IGame
         round++;
         var crashedText = string.Join(" ", pendingCrashText);
         pendingCrashText.Clear();
-        OpenPeriod(Config.RoundSeconds);
 
         if (alive.Count == 2)
         {
@@ -251,6 +250,7 @@ public class SystemCrashGame : IGame
                 .Replace("{left}", alive.Count.ToString()).Replace("{next}", round.ToString())
                 .Replace("{secs}", Config.RoundSeconds.ToString()));
         }
+        OpenPeriod(Config.RoundSeconds);
     }
 
     private void Win(CrashPlayer p)
