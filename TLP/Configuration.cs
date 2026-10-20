@@ -1,5 +1,6 @@
 using System;
 using Dalamud.Configuration;
+using TLP.Games.DeathRoll;
 using TLP.Games.Giveaway;
 using TLP.Games.SystemCrash;
 using TLP.Games.TruthOrDare;
@@ -29,4 +30,5 @@ public class Configuration : IPluginConfiguration
     public GiveawayConfig Giveaway { get; set; } = new();
     public SystemCrashConfig SystemCrash { get; set; } = new();
     public TruthOrDareConfig TruthOrDare { get; set; } = new();
+    public DeathRollConfig DeathRoll { get; set; } = new();
 }

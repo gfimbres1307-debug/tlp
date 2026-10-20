@@ -9,6 +9,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using TLP.Games;
+using TLP.Games.DeathRoll;
 using TLP.Games.Giveaway;
 using TLP.Games.SystemCrash;
 using TLP.Games.TruthOrDare;
@@ -27,6 +28,8 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
+    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
 
     private const string CommandName = "/tlp";
 
@@ -47,6 +50,7 @@ public sealed class Plugin : IDalamudPlugin
         Games.Add(new GiveawayGame(this));
         Games.Add(new SystemCrashGame(this));
         Games.Add(new TruthOrDareGame(this));
+        Games.Add(new DeathRollGame(this));
 
         mainWindow = new MainWindow(this);
         WindowSystem.AddWindow(mainWindow);

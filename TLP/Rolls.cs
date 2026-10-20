@@ -7,7 +7,9 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 namespace TLP;
 
-public readonly record struct RollInfo(string Key, string Name, string World, int Value, bool CustomRange);
+/// <param name="Max">Top of the roll range shown in the line (e.g. 523 for "(1-523)"), or 999 when no range is shown.</param>
+/// <param name="IsSelf">True when the host rolled ("You roll...").</param>
+public readonly record struct RollInfo(string Key, string Name, string World, int Value, bool CustomRange, int Max = 999, bool IsSelf = false);
 
 /// <summary>Reads the game's "/random" result lines (English client).</summary>
 public static class Rolls
@@ -24,6 +26,10 @@ public static class Rolls
 
     /// <summary>True if this chat line is someone else's /random. The host's own rolls ("You roll") are skipped.</summary>
     public static bool TryParse(XivChatType type, SeString sender, SeString message, out RollInfo roll)
+        => TryParse(type, sender, message, false, out roll);
+
+    /// <summary>Same as above; with <paramref name="includeSelf"/> the host's own rolls are returned too (as their character name).</summary>
+    public static bool TryParse(XivChatType type, SeString sender, SeString message, bool includeSelf, out RollInfo roll)
     {
         roll = default;
         if (IsPlayerChat(type)) return false;
@@ -33,9 +39,21 @@ public static class Rolls
         if (!m.Success) return false;
 
         var who = m.Groups[3].Value.Trim();
-        if (who.Equals("You", StringComparison.OrdinalIgnoreCase)) return false;
         if (!int.TryParse(m.Groups[4].Value, out var value)) return false;
         var custom = m.Groups[2].Success && m.Groups[2].Value != "999";
+        var max = m.Groups[2].Success && int.TryParse(m.Groups[2].Value, out var mx) ? mx : 999;
+
+        if (who.Equals("You", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!includeSelf) return false;
+            var me = Plugin.ObjectTable.LocalPlayer;
+            if (me == null) return false;
+            var myName = me.Name.TextValue;
+            var myWorld = string.Empty;
+            try { myWorld = me.HomeWorld.Value.Name.ExtractText(); } catch { /* unknown world */ }
+            roll = new RollInfo($"{myName}@{myWorld}", myName, myWorld, value, custom, max, true);
+            return true;
+        }
 
         var name = who; var world = string.Empty;
         var pp = message.Payloads.OfType<PlayerPayload>().FirstOrDefault() ?? sender.Payloads.OfType<PlayerPayload>().FirstOrDefault();
@@ -44,7 +62,7 @@ public static class Rolls
             name = pp.PlayerName;
             try { world = pp.World.Value.Name.ExtractText(); } catch { /* unknown world */ }
         }
-        roll = new RollInfo($"{name}@{world}", name, world, value, custom);
+        roll = new RollInfo($"{name}@{world}", name, world, value, custom, max);
         return true;
     }
 }
