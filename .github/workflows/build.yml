@@ -2,7 +2,11 @@ name: Build TLP
 
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -34,7 +38,34 @@ jobs:
         shell: pwsh
         run: |
           $proj = Get-ChildItem -Recurse -Filter TLP.csproj | Select-Object -First 1
-          dotnet build $proj.FullName -c Release
+          dotnet build $proj.FullName -c Release -p:Version=1.0.${{ github.run_number }}.0
+
+      - name: Make the install listing (pluginmaster.json)
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem -Recurse -Filter latest.zip TLP/bin | Select-Object -First 1
+          if (-not $zip) { throw "latest.zip was not found" }
+          Copy-Item $zip.FullName latest.zip -Force
+          $manifest = Get-ChildItem -Recurse -Filter TLP.json TLP/bin | Where-Object { (Get-Content $_.FullName -Raw) -match 'AssemblyVersion' } | Select-Object -First 1
+          $m = Get-Content $manifest.FullName -Raw | ConvertFrom-Json
+          $base = "https://github.com/${{ github.repository }}/releases/latest/download"
+          $extra = @{
+            DownloadLinkInstall = "$base/latest.zip"
+            DownloadLinkUpdate  = "$base/latest.zip"
+            DownloadLinkTesting = "$base/latest.zip"
+            RepoUrl             = "https://github.com/${{ github.repository }}"
+            LastUpdate          = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+          }
+          foreach ($k in $extra.Keys) { $m | Add-Member -NotePropertyName $k -NotePropertyValue $extra[$k] -Force }
+          ConvertTo-Json -InputObject @($m) -Depth 5 | Set-Content pluginmaster.json -Encoding utf8
+          Get-Content pluginmaster.json
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${{ github.run_number }}" latest.zip pluginmaster.json --title "TLP 1.0.${{ github.run_number }}" --notes "Automatic build" --latest
 
       - name: Upload plugin
         uses: actions/upload-artifact@v4
