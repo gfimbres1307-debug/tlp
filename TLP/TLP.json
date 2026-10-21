@@ -1,8 +1,9 @@
 {
   "Author": "The Last Protocol",
   "Name": "TLP",
+  "IconUrl": "https://raw.githubusercontent.com/gfimbres1307-debug/tlp/main/tlp_icon.png",
   "Punchline": "The Last Protocol venue games.",
-  "Description": "Venue games for The Last Protocol, switchable in one window. Truth or Dare: highest roll asks the lowest, with your own prompt bank. System Crash: /random elimination rounds, lowest roll crashes out each round. Giveaway: pick a prize from your inventory, players /random, the plugin finds the winner (highest, lowest or closest to a number). Trivia: keep a bank of custom trivia questions, shout them, collect every player's answer from chat, pick the winner(s) yourself, and track points and gil owed. Ends the night by announcing the overall winner.",
-  "Tags": [ "trivia", "giveaway", "system crash", "truth or dare", "venue", "event", "host" ],
+  "Description": "Venue games for The Last Protocol in one window: Trivia, Giveaway, System Crash, Truth or Dare and Death Roll (with tournament brackets). Shouts, countdowns and roll tracking are handled for you. Open with /tlp.",
+  "Tags": [ "trivia", "giveaway", "system crash", "truth or dare", "death roll", "venue", "event", "host" ],
   "RepoUrl": ""
 }
